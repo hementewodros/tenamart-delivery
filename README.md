@@ -80,16 +80,24 @@ By default it runs on:
 👉 [http://localhost:3000](http://localhost:3000)
 
 ---
-
-## 🧪 Postman Testing Guide
-
-We’ve prepared a **Postman collection** so you (or your boss) can test with just a few clicks.
-
-### Step 1. Import collection
-
 1. Open Postman.
 2. Go to **File → Import**.
-3. Import `postman/TenaMart.postman_collection.json` (included in repo).
+3. Import `TenaMart.postman_collection.json` (included in repo).
+
+---
+
+### Quick usage notes
+
+* Import that JSON into Postman: File → Import → choose the JSON file or paste raw text.
+* Create a Postman Environment (or edit the collection variables) and set:
+
+  * `RPC_URL` (e.g. your node or provider RPC)
+  * `CONTRACT_ADDRESS` (the verified contract address)
+  * `ETHERSCAN_API_KEY` (if you want ABI via Etherscan)
+  * `WALLET_ADDRESS` (for `balanceOf`)
+  * `TX_HASH` (for receipt)
+* Run "Get Contract ABI" to fetch ABI text — Postman will show the `result` field; you can copy/paste the ABI into a file or use it in scripts.
+* The `balanceOf` request uses a pre-request script to create the `data` hex payload — no manual encoding needed.
 
 ### Step 2. Create environment
 
@@ -175,8 +183,7 @@ tenamart-delivery/
 │   ├── index.js
 │   └── package.json
 │
-├── postman/                 # Postman test collection
-│   └── TenaMart.postman_collection.json
+├── TenaMart.postman_collection.json
 │
 ├── .env.example             # Example env file
 ├── README.md                # This guide

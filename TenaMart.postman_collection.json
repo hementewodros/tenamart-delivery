@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "TenaMart - Contract Helpers",
+    "_postman_id": "b3f9d6b8-0000-4000-8000-000000000000",
+    "description": "Postman collection with helper requests to interact with the deployed & verified contract. Replace environment variables before use.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "RPC_URL", "value": "https://mainnet.infura.io/v3/YOUR_PROJECT_ID" },
+    { "key": "CONTRACT_ADDRESS", "value": "0xYourContractAddressHere" },
+    { "key": "ETHERSCAN_API_KEY", "value": "YourEtherscanApiKey" },
+    { "key": "WALLET_ADDRESS", "value": "0xYourWalletAddressHere" },
+    { "key": "TX_HASH", "value": "0xYourTxHashHere" }
+  ],
+  "item": [
+    {
+      "name": "Get Contract ABI (Etherscan)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.etherscan.io/api?module=contract&action=getabi&address={{CONTRACT_ADDRESS}}&apikey={{ETHERSCAN_API_KEY}}",
+          "protocol": "https",
+          "host": [
+            "api",
+            "etherscan",
+            "io"
+          ],
+          "path": [
+            "api"
+          ],
+          "query": [
+            { "key": "module", "value": "contract" },
+            { "key": "action", "value": "getabi" },
+            { "key": "address", "value": "{{CONTRACT_ADDRESS}}" },
+            { "key": "apikey", "value": "{{ETHERSCAN_API_KEY}}" }
+          ]
+        },
+        "description": "Fetches the verified contract ABI from Etherscan (if the contract was verified there)."
+      },
+      "response": []
+    },
+    {
+      "name": "eth_call — name() (ERC-20 style)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"eth_call\",\n  \"params\": [\n    { \"to\": \"{{CONTRACT_ADDRESS}}\", \"data\": \"0x06fdde03\" },\n    \"latest\"\n  ],\n  \"id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{RPC_URL}}",
+          "host": [
+            "{{RPC_URL}}"
+          ]
+        },
+        "description": "Call the `name()` function (ERC-20 standard method id = 0x06fdde03). Useful for contracts implementing ERC-20 `name()`."
+      },
+      "response": []
+    },
+    {
+      "name": "eth_call — balanceOf(address)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Build data for balanceOf(address)\n              // method id for balanceOf(address) = 0x70a08231\n              // pad the address to 32 bytes (64 hex chars)\n              (function(){",
+              "    var addr = pm.variables.get('WALLET_ADDRESS') || pm.environment.get('WALLET_ADDRESS');",
+              "    if(!addr) {",
+              "        console.warn('WALLET_ADDRESS not set');",
+              "        return;",
+              "    }",
+              "    // remove 0x if present and lowercase\n              addr = addr.replace(/^0x/i, '');",
+              "    addr = addr.toLowerCase();",
+              "    // left pad to 64 chars\n              var padded = addr.padStart(64, '0');",
+              "    var data = '0x70a08231' + padded;",
+              "    pm.variables.set('BALANCEOF_DATA', data);",
+              "})();"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"eth_call\",\n  \"params\": [\n    { \"to\": \"{{CONTRACT_ADDRESS}}\", \"data\": \"{{BALANCEOF_DATA}}\" },\n    \"latest\"\n  ],\n  \"id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{RPC_URL}}",
+          "host": [
+            "{{RPC_URL}}"
+          ]
+        },
+        "description": "Call the `balanceOf(address)` function. Pre-request script builds the `data` field from the `WALLET_ADDRESS` variable."
+      },
+      "response": []
+    },
+    {
+      "name": "Get transaction receipt",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"eth_getTransactionReceipt\",\n  \"params\": [\"{{TX_HASH}}\"],\n  \"id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{RPC_URL}}",
+          "host": [
+            "{{RPC_URL}}"
+          ]
+        },
+        "description": "Fetch the transaction receipt for a given transaction hash."
+      },
+      "response": []
+    }
+  ]
+}
